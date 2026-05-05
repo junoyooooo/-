@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONOFLOW | AI 자동화 입문 실전 가이드</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --card: #141418;
+            --accent: #4f46e5;
+            --accent-hover: #6366f1;
+            --text: #ffffff;
+            --text-sub: #9ca3af;
+            --price-tag: #ef4444;
+            --event-gold: #fbbf24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.7; word-break: keep-all; }
+        
+        /* 상단 고정 타이머 */
+        .timer-bar {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222; text-align: center; padding: 15px;
+        }
+        .timer-title { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 5px; }
+        .timer-clock { font-family: monospace; font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: 2px; }
+
+        .container { max-width: 640px; margin: 0 auto; padding: 20px; }
+
+        /* 히어로 섹션 */
+        .hero { padding: 60px 0; text-align: left; }
+        .badge { display: inline-block; padding: 4px 12px; background: #222; border-radius: 4px; font-size: 0.75rem; margin-bottom: 15px; color: var(--text-sub); }
+        .hero h1 { font-size: 2.5rem; line-height: 1.2; font-weight: 800; margin-bottom: 10px; }
+        .hero .italic-p { font-style: italic; color: var(--text-sub); font-size: 1.2rem; margin-bottom: 30px; }
+        .hero .intro-text { font-size: 1.1rem; color: #888; margin-bottom: 40px; }
+        .hero .intro-text b { color: #eee; }
+
+        /* 가격 카드 */
+        .price-card { background: var(--card); border: 1px solid #333; border-radius: 16px; padding: 30px; margin-bottom: 40px; }
+        .price-steps { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; }
+        .price-steps b { color: var(--text); }
+        .price-main { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; }
+        .old-price { text-decoration: line-through; color: #555; font-size: 1.2rem; }
+        .new-price { font-size: 3rem; font-weight: 900; color: var(--text); }
+        .buy-btn { display: block; width: 100%; padding: 18px; background: var(--accent); color: white; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 800; font-size: 1.2rem; transition: 0.2s; }
+        .buy-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        /* 섹션 제목 */
+        .section-header { margin: 60px 0 30px; }
+        .section-header span { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 1px; }
+        .section-header h2 { font-size: 1.8rem; font-weight: 800; }
+
+        /* 스탯 그리드 */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 60px; }
+        .stat-box { background: #111; padding: 25px; border-radius: 12px; border-bottom: 3px solid #222; }
+        .stat-box .val { font-size: 2rem; font-weight: 800; display: block; }
+        .stat-box .lab { font-size: 0.75rem; color: var(--text-sub); }
+
+        /* 리스트 아이템 */
+        .item-card { background: var(--card); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .item-card .step { font-size: 0.7rem; font-weight: 800; color: var(--accent); display: block; margin-bottom: 10px; }
+        .item-card h3 { font-size: 1.2rem; margin-bottom: 10px; }
+        .item-card p { color: var(--text-sub); font-size: 0.95rem; }
+        .item-card .time-badge { margin-top: 15px; font-size: 0.8rem; background: #000; padding: 4px 8px; border-radius: 4px; display: inline-block; color: var(--accent); }
+
+        /* 이벤트 특별 카드 */
+        .event-card { border: 1px solid var(--event-gold); background: rgba(251, 191, 36, 0.05); }
+        .event-badge { color: var(--event-gold); font-weight: 800; font-size: 0.75rem; margin-bottom: 10px; display: block; }
+
+        /* 테이블 */
+        .table-wrapper { overflow-x: auto; margin: 30px 0; border: 1px solid #222; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th { background: #111; color: var(--text-sub); font-size: 0.8rem; text-align: left; padding: 12px; border-bottom: 1px solid #222; }
+        td { padding: 15px 12px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        .total-row { background: rgba(79, 70, 229, 0.1); font-weight: 700; }
+
+        /* 체크리스트 */
+        .check-section { background: #000; padding: 30px; border-radius: 12px; margin: 40px 0; }
+        .check-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 20px; }
+        .check-list { list-style: none; }
+        .check-list li { font-size: 0.95rem; margin-bottom: 10px; color: #bbb; display: flex; gap: 10px; }
+        .check-list li::before { content: "✓"; color: var(--accent); font-weight: 800; }
+        .check-list.no li::before { content: "✕"; color: #price-tag; }
+
+        /* 리뷰 */
+        .review-card { border-left: 2px solid var(--accent); padding-left: 20px; margin-bottom: 30px; }
+        .stars { color: #facc15; margin-bottom: 10px; }
+        .review-text { font-size: 1rem; color: #ddd; margin-bottom: 10px; }
+        .reviewer { font-size: 0.8rem; color: var(--text-sub); }
+
+        /* FAQ */
+        .faq-item { border-bottom: 1px solid #222; padding: 20px 0; }
+        .faq-q { font-weight: 700; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+        .faq-a { margin-top: 10px; color: var(--text-sub); font-size: 0.95rem; }
+
+        footer { text-align: center; padding: 60px 0; border-top: 1px solid #222; margin-top: 100px; }
+        .footer-brand { font-weight: 800; font-size: 1rem; margin-bottom: 10px; display: block; }
+        .footer-sub { font-size: 0.75rem; color: var(--text-sub); }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8rem; }
+            .new-price { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="timer-bar">
+    <p class="timer-title">⚡ 얼리버드 19,900원 & 이벤트 추가증정 마감까지</p>
+    <div class="timer-clock" id="countdown">00:00:00</div>
+</div>
+
+<div class="container">
+    <section class="hero">
+        <span class="badge">MONOFLOW · 2026 · 전자책 + 코드팩</span>
+        <h1>"나는 코딩을<br>모르는데요"</h1>
+        <p class="italic-p">그래서 이 책입니다.</p>
+        <p class="intro-text">
+            이 책은 AI 자동화로 <b>모든 걸 다 해결한다</b>고 말하지 않습니다.<br>
+            다만 <b>한 번도 해본 적 없는 사람</b>이 처음으로 뭔가 만들고,<br>
+            그 경험을 발판으로 <b>조금씩 앞으로 나아가는 것</b>을 돕습니다.
+        </p>
+        
+        <div class="price-card">
+            <p class="price-steps">현재 <b>19,900원</b> → 이후 59,900원 → 109,900원</p>
+            <div class="price-main">
+                <span class="old-price">109,900원</span>
+                <span class="new-price">19,900원</span>
+            </div>
+            <a href="https://docs.google.com/forms/d/1WYkHi6bhOyGim-YANcITvMdoUrRaFeRmRy_fZ0VJCuM/edit?hl=ko&pli=1" class="buy-btn">가이드북 구매하기 →</a>
+            <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: center;">결제 즉시 다운로드 · 업데이트 및 보너스 코드 증정</p>
+        </div>
+    </section>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <span class="val">16</span>
+            <span class="lab">실전 코드 · 프롬프트</span>
+        </div>
+        <div class="stat-box">
+            <span class="val">8+</span>
+            <span class="lab">챕터 + 부록 4종</span>
+        </div>
+        <div class="stat-box">
+            <span class="val">0원</span>
+            <span class="lab">초기 운영 비용</span>
+        </div>
+        <div class="stat-box">
+            <span class="val">30일</span>
+            <span class="lab">첫 결과물 목표</span>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span>THE PROBLEM</span>
+        <h2>코딩도 모르는데 나도 할 수 있을까?</h2>
+    </div>
+    <p style="color: var(--text-sub); margin-bottom: 30px;">
+        이 질문 앞에서 많은 사람이 포기합니다. 이 책은 그 질문에 "한번 해보세요"라고 대답합니다.
+    </p>
+
+    <div class="item-card">
+        <p class="review-text" style="font-size: 1.2rem; color: #fff;">😮 "유튜브 영상 봤는데 에러만 나요"</p>
+        <p>이 책엔 가장 자주 나오는 에러 6가지와 해결법이 담겨 있습니다. 막히는 순간을 위한 우회 방법도 함께입니다.</p>
+    </div>
+    <div class="item-card">
+        <p class="review-text" style="font-size: 1.2rem; color: #fff;">🤯 "n8n, Gemini... 뭐부터 해야 할지 모르겠어요"</p>
+        <p>30일 실행 플랜이 Day 1부터 날짜별로 무엇을 할지 알려드립니다. 생각할 필요 없이 그대로 따라가면 됩니다.</p>
+    </div>
+    <div class="item-card">
+        <p class="review-text" style="font-size: 1.2rem; color: #fff;">😶 "코드 복붙은 알겠는데 어디에 써요?"</p>
+        <p>코드마다 "어디서 열고, 어디에 붙이고, 어떻게 확인하는지" 단계별로 설명합니다. 이해보다 실행이 먼저입니다.</p>
+    </div>
+
+    <div class="section-header">
+        <span>CURRICULUM</span>
+        <h2>5단계 실습 과정</h2>
+    </div>
+
+    <div class="item-card">
+        <span class="step">01</span>
+        <h3>Gemini API 첫 호출</h3>
+        <p>Google 계정만 있으면 10분 안에 AI와 대화하는 코드를 실행할 수 있습니다.</p>
+        <span class="time-badge">10분 소요</span>
+    </div>
+    <div class="item-card">
+        <span class="step">02</span>
+        <h3>내 이름이 박힌 웹 주소</h3>
+        <p>GitHub과 Vercel을 연결해 yourname.vercel.app 주소를 만듭니다.</p>
+        <span class="time-badge">3분 소요</span>
+    </div>
+    <div class="item-card">
+        <span class="step">03</span>
+        <h3>Telegram으로 소재 추천받기</h3>
+        <p>n8n에 JSON을 붙여넣어 매주 월요일 유튜브 소재를 자동 수신합니다.</p>
+        <span class="time-badge">1시간 소요</span>
+    </div>
+    <div class="item-card">
+        <span class="step">04</span>
+        <h3>전자책 만들고 크몽 올리기</h3>
+        <p>AI와 협업하여 목차를 짜고 PDF를 제작해 판매 등록까지 완료합니다.</p>
+        <span class="time-badge">2주 소요</span>
+    </div>
+    <div class="item-card">
+        <span class="step">05</span>
+        <h3>유튜브 첫 영상 올리기</h3>
+        <p>Gemini(대본), Edge TTS(음성), FFmpeg(편집) 자동화 파이프라인 가동.</p>
+        <span class="time-badge">30일 목표</span>
+    </div>
+
+    <div class="section-header">
+        <span>PACKAGE</span>
+        <h2>책 한 권이 아니라 도구 세트입니다</h2>
+    </div>
+    <div class="item-card">
+        <h3>본책: MONOFLOW v4.0</h3>
+        <p>8개 챕터 + 부록 4종. 트러블슈팅 가이드, 수익 시뮬레이터 포함.</p>
+    </div>
+    <div class="item-card event-card">
+        <span class="event-badge">LIMITED EVENT</span>
+        <h3>보너스 실전 코드 16선</h3>
+        <p>FFmpeg 영상 자동화 3종, Gemini 프롬프트 라이브러리, n8n JSON 5종, HTML 포트폴리오 템플릿.</p>
+        <p style="font-size: 0.85rem; margin-top: 10px; color: var(--event-gold); font-weight: 700;">→ 이벤트 기간 내 구매 시 추가 증정 (별도 발송)</p>
+    </div>
+
+    <div class="section-header">
+        <span>EXPECTATION</span>
+        <h2>얼마나 벌 수 있나요? (솔직하게)</h2>
+    </div>
+    <p style="color: var(--text-sub); margin-bottom: 20px;">한 달에 1,000만원 버는 법이 아닙니다. 꾸준히 했을 때의 현실적 수치입니다.</p>
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>기간</th>
+                <th>유튜브 자동화</th>
+                <th>전자책 판매</th>
+                <th>프리랜서 개발</th>
+                <th>합계</th>
+            </tr>
+            <tr>
+                <td>1개월</td>
+                <td>0원 (성장 중)</td>
+                <td>5~15만원</td>
+                <td>20~50만원</td>
+                <td>25~65만원</td>
+            </tr>
+            <tr>
+                <td>3개월</td>
+                <td>5~15만원</td>
+                <td>15~30만원</td>
+                <td>40~80만원</td>
+                <td>60~125만원</td>
+            </tr>
+            <tr class="total-row">
+                <td>6개월</td>
+                <td>30~50만원</td>
+                <td>20~40만원</td>
+                <td>50~100만원</td>
+                <td>100~190만원</td>
+            </tr>
+        </table>
+    </div>
+    <p style="font-size: 0.75rem; color: #555;">※ 초기 비용은 모든 도구 무료 티어로 시작 시 0원입니다.</p>
+
+    <div class="check-section">
+        <p class="check-title">✓ 이런 분께 맞습니다</p>
+        <ul class="check-list">
+            <li>AI 자동화를 한 번도 안 해봤지만 시작하고 싶은 분</li>
+            <li>퇴근 후 1~2시간으로 뭔가를 만들고 싶은 분</li>
+            <li>유튜브, 전자책, 웹 개발 중 하나라도 직접 해보고 싶은 분</li>
+            <li>에러가 나도 책 보며 해결해 볼 의지가 있는 분</li>
+        </ul>
+    </div>
+
+    <div class="check-section">
+        <p class="check-title">✕ 이런 분께는 맞지 않습니다</p>
+        <ul class="check-list no">
+            <li>한 달 안에 큰 수익을 기대하는 분</li>
+            <li>책만 읽고 실습은 하지 않으실 분</li>
+            <li>이미 자동화 파이프라인을 운영 중인 경험자</li>
+            <li>에러 한 번 나면 바로 포기하시는 분</li>
+        </ul>
+    </div>
+
+    <div class="section-header">
+        <span>REVIEWS</span>
+        <h2>먼저 경험한 분들의 이야기</h2>
+    </div>
+    <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"진짜 3분 만에 내 URL이 생기더라고요. 신기해서 계속하게 됐습니다."</p>
+        <p class="reviewer">K님 · 직장인 부업러</p>
+    </div>
+    <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"n8n으로 텔레그램 메시지 오는 거 보고 '이게 자동화구나' 처음 느꼈습니다."</p>
+        <p class="reviewer">P님 · 유튜브 준비생</p>
+    </div>
+    <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"APPENDIX A 없었으면 중간에 포기했을 거예요. 해결하고 나니 자신감이 생겼습니다."</p>
+        <p class="reviewer">J님 · 프리랜서 준비 중</p>
+    </div>
+
+    <div class="section-header">
+        <span>FAQ</span>
+        <h2>자주 묻는 질문</h2>
+    </div>
+    <div class="faq-item">
+        <p class="faq-q">정말 코딩을 전혀 몰라도 되나요? <span>+</span></p>
+        <p class="faq-a">네. 코드를 이해할 필요가 없습니다. 복사-붙여넣기 하고, 정해진 부분(이름, 키값)만 수정하면 작동합니다.</p>
+    </div>
+    <div class="faq-item">
+        <p class="faq-q">유료 도구를 구독해야 하나요? <span>+</span></p>
+        <p class="faq-a">아니요. 모든 도구는 무료 티어로 시작 가능합니다. 초기 비용 0원으로 설계되었습니다.</p>
+    </div>
+    <div class="faq-item">
+        <p class="faq-q">중간에 막히면 어떻게 하나요? <span>+</span></p>
+        <p class="faq-a">부록 A의 에러 가이드와 AI 전용 프롬프트를 활용해 AI에게 물어보면 즉시 해결책을 줍니다.</p>
+    </div>
+
+    <div style="margin-top: 80px; text-align: center;">
+        <p style="font-size: 0.9rem; color: var(--accent); font-weight: 800; margin-bottom: 10px;">이벤트 혜택 마감 임박</p>
+        <h2 style="font-size: 2rem; margin-bottom: 30px;">초보에서 벗어나는 첫 걸음</h2>
+        <div class="price-card" style="background: var(--accent);">
+            <p style="text-decoration: line-through; opacity: 0.6;">109,900원</p>
+            <p style="font-size: 3.5rem; font-weight: 900; margin: 10px 0;">19,900원</p>
+            <a href="https://docs.google.com/forms/d/1WYkHi6bhOyGim-YANcITvMdoUrRaFeRmRy_fZ0VJCuM/edit?hl=ko&pli=1" class="buy-btn" style="background: white; color: var(--accent);">이벤트 혜택 받고 구매하기</a>
+            <p style="font-size: 0.8rem; color: #fff; margin-top: 15px; opacity: 0.8;">※ 이벤트 기간 한정: 코드팩 16선 추가 증정</p>
+        </div>
+    </div>
+
+    <footer>
+        <span class="footer-brand">MONOFLOW · 2026</span>
+        <p class="footer-sub">AI 자동화 전자책 + 코드팩 16선 이벤트 중</p>
+        <p class="footer-sub">문의: contact@monoflow.kr</p>
+    </footer>
+</div>
+
+<script>
+    function updateTimer() {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        
+        let diff = midnight - now;
+
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('countdown').innerText = 
+            `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    setInterval(updateTimer, 1000);
+    updateTimer();
+</script>
+
+</body>
+</html>
